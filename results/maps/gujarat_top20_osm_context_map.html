@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Gujarat Top-20 FIRMS Groups &amp; Nearby OSM Context</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; }
+  #map { height: 100%; }
+  .legend {
+    background: white; padding: 8px 10px; font: 13px sans-serif;
+    line-height: 1.4; border-radius: 4px; box-shadow: 0 0 4px rgba(0,0,0,0.3);
+  }
+  .legend span.dot {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  var map = L.map('map').setView([22.35, 71.2], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  var firmsPoints = [{"lat": 21.106567050938335, "lon": 72.64576975871314, "rank": 1, "unique_dates": "250", "detection_count": "373"}, {"lat": 21.103762388663974, "lon": 72.64588437246962, "rank": 2, "unique_dates": "185", "detection_count": "247"}, {"lat": 21.109889374999995, "lon": 72.634735125, "rank": 3, "unique_dates": "130", "detection_count": "160"}, {"lat": 21.106557077922087, "lon": 72.64845025974022, "rank": 4, "unique_dates": "128", "detection_count": "154"}, {"lat": 21.106743212121216, "lon": 72.6312058787879, "rank": 5, "unique_dates": "117", "detection_count": "165"}, {"lat": 21.109587597402594, "lon": 72.63138441558439, "rank": 6, "unique_dates": "112", "detection_count": "154"}, {"lat": 20.910839159663873, "lon": 71.45854193277307, "rank": 7, "unique_dates": "110", "detection_count": "119"}, {"lat": 21.103120071428574, "lon": 72.63515614285713, "rank": 8, "unique_dates": "99", "detection_count": "140"}, {"lat": 24.690542105263173, "lon": 73.00251705263156, "rank": 9, "unique_dates": "93", "detection_count": "95"}, {"lat": 20.834290449438203, "lon": 70.69340078651683, "rank": 10, "unique_dates": "84", "detection_count": "89"}, {"lat": 21.103151415094338, "lon": 72.63773537735851, "rank": 11, "unique_dates": "82", "detection_count": "106"}, {"lat": 23.01361523809524, "lon": 70.10317452380951, "rank": 12, "unique_dates": "79", "detection_count": "84"}, {"lat": 21.10641693181817, "lon": 72.64286977272727, "rank": 13, "unique_dates": "78", "detection_count": "88"}, {"lat": 21.103818170731703, "lon": 72.64861804878049, "rank": 14, "unique_dates": "75", "detection_count": "82"}, {"lat": 21.103680641025637, "lon": 72.64279038461538, "rank": 15, "unique_dates": "73", "detection_count": "78"}, {"lat": 21.106720999999997, "lon": 72.63456762500002, "rank": 16, "unique_dates": "68", "detection_count": "80"}, {"lat": 20.908872307692302, "lon": 71.45870676923074, "rank": 17, "unique_dates": "62", "detection_count": "65"}, {"lat": 22.922583333333336, "lon": 70.10688345238096, "rank": 18, "unique_dates": "60", "detection_count": "84"}, {"lat": 23.104592222222216, "lon": 70.18725698412698, "rank": 19, "unique_dates": "59", "detection_count": "63"}, {"lat": 21.100703823529415, "lon": 72.63500750000001, "rank": 20, "unique_dates": "58", "detection_count": "68"}];
+  var osmPoints = [{"lat": 21.1098624, "lon": 72.6437334, "label": "Industrial land use", "tag": "landuse=industrial", "name": "ArcelorMittal Nippon Steel India", "distance_m": 423.0, "rank": 1}, {"lat": 21.1098624, "lon": 72.6437334, "label": "Industrial land use", "tag": "landuse=industrial", "name": "ArcelorMittal Nippon Steel India", "distance_m": 714.0, "rank": 2}, {"lat": 21.1171657, "lon": 72.6327643, "label": "Power substation", "tag": "power=substation", "name": "Hazira", "distance_m": 834.5, "rank": 3}, {"lat": 21.1104902, "lon": 72.6473097, "label": "Silo", "tag": "man_made=silo", "name": "(unnamed)", "distance_m": 453.1, "rank": 4}, {"lat": 21.1171657, "lon": 72.6327643, "label": "Power substation", "tag": "power=substation", "name": "Hazira", "distance_m": 1170.1, "rank": 5}, {"lat": 21.1171657, "lon": 72.6327643, "label": "Power substation", "tag": "power=substation", "name": "Hazira", "distance_m": 854.7, "rank": 6}, {"lat": 20.9073538, "lon": 71.458579, "label": "Power substation", "tag": "power=substation", "name": "L&T Kovaya", "distance_m": 387.6, "rank": 7}, {"lat": 21.1098624, "lon": 72.6437334, "label": "Industrial land use", "tag": "landuse=industrial", "name": "ArcelorMittal Nippon Steel India", "distance_m": 1163.5, "rank": 8}, {"lat": 24.6920699, "lon": 73.0027449, "label": "Industrial land use", "tag": "landuse=industrial", "name": "(unnamed)", "distance_m": 171.4, "rank": 9}, {"lat": 20.8345206, "lon": 70.6942687, "label": "Chimney", "tag": "man_made=chimney", "name": "(unnamed)", "distance_m": 93.8, "rank": 10}, {"lat": 21.1098624, "lon": 72.6437334, "label": "Industrial land use", "tag": "landuse=industrial", "name": "ArcelorMittal Nippon Steel India", "distance_m": 971.6, "rank": 11}, {"lat": 23.0136704, "lon": 70.1037037, "label": "Industrial land use", "tag": "landuse=industrial", "name": "(unnamed)", "distance_m": 54.5, "rank": 12}, {"lat": 21.1098624, "lon": 72.6437334, "label": "Industrial land use", "tag": "landuse=industrial", "name": "ArcelorMittal Nippon Steel India", "distance_m": 393.5, "rank": 13}, {"lat": 21.1104902, "lon": 72.6473097, "label": "Silo", "tag": "man_made=silo", "name": "(unnamed)", "distance_m": 754.2, "rank": 14}, {"lat": 21.1098624, "lon": 72.6437334, "label": "Industrial land use", "tag": "landuse=industrial", "name": "ArcelorMittal Nippon Steel India", "distance_m": 694.3, "rank": 15}, {"lat": 21.1098624, "lon": 72.6437334, "label": "Industrial land use", "tag": "landuse=industrial", "name": "ArcelorMittal Nippon Steel India", "distance_m": 1012.9, "rank": 16}, {"lat": 20.9073538, "lon": 71.458579, "label": "Power substation", "tag": "power=substation", "name": "L&T Kovaya", "distance_m": 169.4, "rank": 17}, {"lat": 22.9191876, "lon": 70.1042631, "label": "Industrial land use", "tag": "landuse=industrial", "name": "Tuna-Tekra Container Terminal", "distance_m": 463.2, "rank": 18}, {"lat": 23.1067446, "lon": 70.1875037, "label": "Industrial land use", "tag": "landuse=industrial", "name": "(unnamed)", "distance_m": 240.7, "rank": 19}, {"lat": 21.1098624, "lon": 72.6437334, "label": "Industrial land use", "tag": "landuse=industrial", "name": "ArcelorMittal Nippon Steel India", "distance_m": 1362.5, "rank": 20}];
+
+  firmsPoints.forEach(function(p) {
+    var marker = L.circleMarker([p.lat, p.lon], {
+      radius: 9, color: '#c53030', weight: 2, fillColor: '#feb2b2', fillOpacity: 0.85
+    });
+    marker.bindPopup(
+      '<b>FIRMS recurring group #' + p.rank + '</b><br>' +
+      'Detections: ' + p.detection_count + '<br>' +
+      'Unique dates: ' + p.unique_dates +
+      '<br><i>No source type is implied by this marker.</i>'
+    );
+    marker.addTo(map);
+  });
+
+  osmPoints.forEach(function(p) {
+    var marker = L.circleMarker([p.lat, p.lon], {
+      radius: 7, color: '#2f855a', weight: 2, fillColor: '#9ae6b4', fillOpacity: 0.85
+    });
+    marker.bindPopup(
+      '<b>Nearest OSM feature to group #' + p.rank + '</b><br>' +
+      'Tag: ' + p.tag + '<br>' +
+      'Type: ' + p.label + '<br>' +
+      'Name: ' + p.name + '<br>' +
+      'Distance from FIRMS centroid: ' + p.distance_m + ' m' +
+      '<br><i>Proximity is not evidence of causation.</i>'
+    );
+    marker.addTo(map);
+
+    var firmsPoint = firmsPoints.find(function(f) { return f.rank === p.rank; });
+    if (firmsPoint) {
+      L.polyline([[firmsPoint.lat, firmsPoint.lon], [p.lat, p.lon]], {
+        color: '#718096', weight: 1, dashArray: '4,4'
+      }).addTo(map);
+    }
+  });
+
+  var legend = L.control({position: 'bottomright'});
+  legend.onAdd = function() {
+    var div = L.DomUtil.create('div', 'legend');
+    div.innerHTML =
+      '<span class="dot" style="background:#c53030"></span>Top 20 FIRMS recurring groups<br>' +
+      '<span class="dot" style="background:#2f855a"></span>Nearest matched OSM feature (within 2000m)';
+    return div;
+  };
+  legend.addTo(map);
+</script>
+</body>
+</html>

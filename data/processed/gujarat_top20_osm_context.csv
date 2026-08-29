@@ -1,0 +1,21 @@
+rank,group_lat,group_lon,unique_dates,detection_count,osm_query_status,features_found_in_radius,nearest_osm_tag,nearest_osm_label,nearest_osm_name,nearest_osm_distance_m,nearest_osm_lat,nearest_osm_lon
+1,21.106567050938335,72.64576975871314,250,373,ok,29,landuse=industrial,Industrial land use,ArcelorMittal Nippon Steel India,423.0,21.1098624,72.6437334
+2,21.103762388663974,72.64588437246962,185,247,ok,29,landuse=industrial,Industrial land use,ArcelorMittal Nippon Steel India,714.0,21.1098624,72.6437334
+3,21.109889374999995,72.634735125,130,160,ok,14,power=substation,Power substation,Hazira,834.5,21.1171657,72.6327643
+4,21.106557077922087,72.64845025974022,128,154,ok,29,man_made=silo,Silo,,453.1,21.1104902,72.6473097
+5,21.106743212121216,72.6312058787879,117,165,ok,11,power=substation,Power substation,Hazira,1170.1,21.1171657,72.6327643
+6,21.109587597402594,72.63138441558439,112,154,ok,12,power=substation,Power substation,Hazira,854.7,21.1171657,72.6327643
+7,20.910839159663873,71.45854193277307,110,119,ok,13,power=substation,Power substation,L&T Kovaya,387.6,20.9073538,71.458579
+8,21.103120071428574,72.63515614285713,99,140,ok,14,landuse=industrial,Industrial land use,ArcelorMittal Nippon Steel India,1163.5,21.1098624,72.6437334
+9,24.690542105263173,73.00251705263156,93,95,ok,6,landuse=industrial,Industrial land use,,171.4,24.6920699,73.0027449
+10,20.834290449438203,70.69340078651683,84,89,ok,9,man_made=chimney,Chimney,,93.8,20.8345206,70.6942687
+11,21.103151415094338,72.63773537735851,82,106,ok,22,landuse=industrial,Industrial land use,ArcelorMittal Nippon Steel India,971.6,21.1098624,72.6437334
+12,23.01361523809524,70.10317452380951,79,84,ok,6,landuse=industrial,Industrial land use,,54.5,23.0136704,70.1037037
+13,21.10641693181817,72.64286977272727,78,88,ok,29,landuse=industrial,Industrial land use,ArcelorMittal Nippon Steel India,393.5,21.1098624,72.6437334
+14,21.103818170731703,72.64861804878049,75,82,ok,29,man_made=silo,Silo,,754.2,21.1104902,72.6473097
+15,21.103680641025637,72.64279038461538,73,78,ok,30,landuse=industrial,Industrial land use,ArcelorMittal Nippon Steel India,694.3,21.1098624,72.6437334
+16,21.106720999999997,72.63456762500002,68,80,ok,14,landuse=industrial,Industrial land use,ArcelorMittal Nippon Steel India,1012.9,21.1098624,72.6437334
+17,20.908872307692302,71.45870676923074,62,65,ok,13,power=substation,Power substation,L&T Kovaya,169.4,20.9073538,71.458579
+18,22.922583333333336,70.10688345238096,60,84,ok,2,landuse=industrial,Industrial land use,Tuna-Tekra Container Terminal,463.2,22.9191876,70.1042631
+19,23.104592222222216,70.18725698412698,59,63,ok,13,landuse=industrial,Industrial land use,,240.7,23.1067446,70.1875037
+20,21.100703823529415,72.63500750000001,58,68,ok,10,landuse=industrial,Industrial land use,ArcelorMittal Nippon Steel India,1362.5,21.1098624,72.6437334
