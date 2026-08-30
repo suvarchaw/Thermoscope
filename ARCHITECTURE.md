@@ -30,8 +30,37 @@ Data Sources → Ingestion → Processing → Analysis → ML/Classification →
 
 ### 2. Ingestion
 
-- TBD. Expected to involve reading FIRMS historical export(s) for the
-  candidate region/time range into `data/raw/` without modification.
+- **Implemented for multi-year FIRMS acquisition, blocked on credentials
+  for actually running it beyond 2023.** The original 2023 dataset
+  (`data/raw/fire_archive_SV-C2_794895.csv`) was manually placed and is
+  read-only, unchanged by anything below.
+- [src/firms_ingestion.py](src/firms_ingestion.py): reusable module for
+  NASA's official FIRMS Area API
+  (`https://firms.modaps.eosdis.nasa.gov/api/area/csv/...`). Reads
+  `FIRMS_MAP_KEY` from the environment — via a local, gitignored `.env`
+  file (loaded automatically with `python-dotenv`) or a real environment
+  variable — never hardcodes a key, never commits one. Chunks any date
+  range into non-overlapping ≤5-day windows (the API's documented
+  per-request limit), fetches from the `VIIRS_SNPP_SP` (standard
+  processing / historical) source scoped to the Gujarat bounding box
+  (reusing `LAT_MIN`/`LAT_MAX`/`LON_MIN`/`LON_MAX` from
+  `spatial_recurrence.py`, not redefined), normalizes the API's
+  `bright_ti4`/`bright_ti5` column names to this project's existing
+  `brightness`/`bright_t31` names, validates required columns, deduplicates,
+  and skips re-ingestion if a year is already present on disk.
+- [src/ingest_multi_year_gujarat.py](src/ingest_multi_year_gujarat.py):
+  orchestrates fetching 2019–2022 into
+  `data/raw/firms_gujarat_{year}.csv` (2023 is deliberately not
+  re-fetched — see Decisions). **Confirmed working**: a MAP_KEY was
+  provided and all four years were successfully ingested and verified
+  (correct bounds, full-year date coverage, single satellite, zero
+  duplicates, all required columns present) — see PROGRESS.md for exact
+  row counts.
+- [src/multi_year_gujarat_processing.py](src/multi_year_gujarat_processing.py):
+  combines all years actually present (now 2019–2023) into
+  `data/processed/gujarat_multi_year_detections.csv` (93,018 rows),
+  tagging every row with `year` and re-applying Gujarat bounds defensively
+  regardless of source.
 
 ### 3. Processing
 
@@ -103,6 +132,80 @@ Data Sources → Ingestion → Processing → Analysis → ML/Classification →
   (active_span_days+1)) appear more discriminating. This observation should
   inform, but does not itself decide, how persistence is eventually
   defined.
+- **Per-cluster evidence/review table**
+  ([src/build_cluster_evidence_review.py](src/build_cluster_evidence_review.py)):
+  joins the cluster stats, derived recurrence metrics, and OSM context
+  into one row-per-cluster table
+  (`data/processed/gujarat_cluster_evidence_review.csv`, 60 rows, 46
+  columns) for human review ahead of any persistence/labeling decision.
+  This is the intended handoff artifact between "spatial + contextual
+  analysis" and whatever persistence-definition discussion comes next — it
+  contains no classification, label, or score column of any kind.
+- **Recurrence Profile (temporal-recurrence annotation, confirmed).**
+  [src/recurrence_profile.py](src/recurrence_profile.py) computes three
+  fields — `recurrence_strength` (Strong/Moderate/Limited, from
+  `unique_dates`, thresholds anchored to natural gaps in the 60-cluster
+  dataset), `short_window_recurrence` (bool, `active_span_days <= 80`),
+  and `burst_concentrated` (bool, `top3_days_share > 0.5`, a caution flag
+  only, never a tier) — each a pure function of exactly one existing
+  metric. [src/build_recurrence_profiles.py](src/build_recurrence_profiles.py)
+  applies this to all 60 clusters, preserving every existing evidence
+  column unchanged, and writes
+  `data/processed/gujarat_cluster_recurrence_profiles.csv`.
+  **A Recurrence Profile is explicitly not a source-type classification
+  and not a final persistent-source label — it describes only temporal
+  recurrence behavior.** OSM context and FIRMS `type` are structurally
+  excluded (the functions don't accept them as inputs at all), verified by
+  dedicated tests. See DECISIONS.md for the threshold rationale.
+- **Cross-year recurrence (descriptive only, spatial baseline preserved).**
+  [src/cross_year_recurrence_analysis.py](src/cross_year_recurrence_analysis.py)
+  answers "did the same spatial zone recur across years" without
+  re-running or altering the 2023 DBSCAN clustering. 2023 detections keep
+  their real, already-computed cluster assignments unchanged; historical
+  (non-2023) detections are matched to the nearest 2023 cluster centroid
+  only if within that cluster's own `extent_radius_m` (a documented,
+  deliberately conservative circular-buffer approximation of an often
+  irregular true DBSCAN shape — see the module docstring and DECISIONS.md
+  for why this was chosen over re-clustering each year independently).
+  Unmatched historical detections are retained separately, not discarded.
+  Output: `data/processed/gujarat_cluster_cross_year_recurrence.csv`
+  (years_detected, unique_years, first/last_year, per-year counts,
+  recurs_across_multiple_years) — purely descriptive, does not redefine
+  `recurrence_strength` or the other locked Recurrence Profile fields.
+  **Run against real 2019–2023 data**: all 60 clusters show
+  `recurs_across_multiple_years=True` (44 matched in all 5 years). This is
+  the project's first independent, non-circular corroboration of
+  persistence — it does not by itself justify any label, but it is
+  genuine multi-year evidence, not a single-year artifact.
+- **Cluster-level longitudinal feature table (descriptive feature
+  engineering, additive).**
+  [src/cluster_longitudinal_features.py](src/cluster_longitudinal_features.py)
+  combines every existing per-cluster metric (spatial, Recurrence Profile,
+  OSM context, cross-year summary — all read unchanged) with new
+  descriptive features computed from the same already-validated per-
+  detection cross-year assignments: zero-filled per-year detections/active
+  days, total/mean/std/CV of annual detections, a simple 5-point OLS trend
+  slope with a stated threshold-based direction label, and a monthly
+  seasonal distribution with a top-3-months concentration indicator.
+  Output: `data/processed/gujarat_cluster_longitudinal_features.csv` (60
+  rows, 73 columns) — a new, additive artifact; no existing dataset was
+  modified. [src/analyze_cluster_longitudinal_features.py](src/analyze_cluster_longitudinal_features.py)
+  answers persistence/trend/seasonality questions descriptively — no
+  model, label, or risk score is produced.
+- **Integrated cluster evidence layer (interpretability, additive).**
+  [src/cluster_integrated_evidence.py](src/cluster_integrated_evidence.py)
+  reorganizes all of the above (unchanged) into seven documented evidence
+  groups for human review — A. Temporal persistence, B. Activity/
+  intensity, C. Trend behavior, D. Seasonality, E. Spatial characteristics,
+  F. OSM/context, G. Recurrence-Profile evidence — plus six small,
+  single-rule derived indicators (persistence/activity/seasonality
+  categories, a notable-OSM-context flag, and an `evidence_notes`
+  cross-check field). None of these is a composite/weighted score.
+  Output: `data/processed/gujarat_cluster_integrated_evidence.csv` (60
+  rows, 68 columns). This is the current best single artifact for human
+  review of a cluster's full evidence base ahead of any future
+  labeling/ML decision — it is explicitly not a classification and
+  contains no source-type or risk field.
 
 ### 5. ML / Classification
 
@@ -110,6 +213,18 @@ Data Sources → Ingestion → Processing → Analysis → ML/Classification →
 - Whether ML is even the right tool for source classification is itself an
   open question to be assessed once exploratory analysis is done, not an
   assumed requirement.
+- The Recurrence Profile fields and all underlying continuous metrics are
+  intended as candidate future ML features, not as labels — no training
+  data or ground truth exists yet.
+- A dedicated ground-truth/labeling-strategy investigation (analysis-only,
+  no files changed) concluded: the 60 Gujarat-2023 clusters are not
+  sufficient for a trained ML classifier (small N, single year, single
+  state, uneven class balance, incomplete OSM coverage), but are
+  sufficient as a hand-reviewable pilot; OSM proximity must never become
+  the training label (circularity risk — a model would just relearn a
+  distance rule); multi-year cross-referencing (this milestone) was
+  recommended as the first, lowest-cost, non-circular step before any
+  manual labeling begins.
 
 ### 6. Results / Interface
 
