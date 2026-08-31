@@ -72,6 +72,19 @@ EARTH_RADIUS_M = 6_371_000.0
 
 BASELINE_YEAR = 2023
 
+# The original 5-year window (2019-2023) that unique_years/years_detected/
+# first_year/last_year/recurs_across_multiple_years are defined over.
+# Downstream code (cluster_integrated_evidence.py's persistence_category,
+# build_cluster_intelligence_layer.py's corroboration_5yr_persistence) hard-
+# codes "unique_years == 5" as an already-published, documented result --
+# preserved exactly here even after 2024/2025 are ingested and discovered
+# by build_all_year_assignments(), by restricting these five specific
+# summary fields to SUMMARY_YEARS. per_year_detection_counts and
+# per_year_unique_dates below are NOT restricted -- they span every year
+# actually ingested, since downstream code (cluster_longitudinal_features.py
+# EXTENDED_YEARS) reads 2024/2025 counts from them additively.
+SUMMARY_YEARS = {2019, 2020, 2021, 2022, 2023}
+
 
 def haversine_m(lat1, lon1, lat2, lon2):
     p1, p2 = math.radians(lat1), math.radians(lat2)
@@ -165,7 +178,11 @@ def compute_cross_year_metrics(assignments, cluster_defs):
         cid = c["cluster_id"]
         rows = by_cluster.get(cid, [])
 
-        years_detected = sorted({row["year"] for row in rows})
+        # Summary fields (unique_years etc.) stay pinned to SUMMARY_YEARS --
+        # see module-level comment. per_year_* counts below span every year
+        # actually present in rows (including 2024/2025, once ingested).
+        years_detected = sorted({row["year"] for row in rows if row["year"] in SUMMARY_YEARS})
+        all_years_present = sorted({row["year"] for row in rows})
         per_year_counts = defaultdict(int)
         per_year_unique_dates = defaultdict(set)
         for row in rows:
@@ -180,10 +197,10 @@ def compute_cross_year_metrics(assignments, cluster_defs):
             "last_year": years_detected[-1] if years_detected else "",
             "recurs_across_multiple_years": len(years_detected) > 1,
             "per_year_detection_counts": ";".join(
-                f"{y}:{per_year_counts[y]}" for y in years_detected
+                f"{y}:{per_year_counts[y]}" for y in all_years_present
             ),
             "per_year_unique_dates": ";".join(
-                f"{y}:{len(per_year_unique_dates[y])}" for y in years_detected
+                f"{y}:{len(per_year_unique_dates[y])}" for y in all_years_present
             ),
         })
 

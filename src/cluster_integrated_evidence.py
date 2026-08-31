@@ -83,8 +83,14 @@ GROUP_A = ["unique_years", "years_detected", "first_year", "last_year",
 GROUP_B = ["total_detections_5yr", "mean_annual_detections",
            "detections_2019", "detections_2020", "detections_2021",
            "detections_2022", "detections_2023",
+           # 2024/2025 added additively (see cluster_longitudinal_features.py
+           # EXTENDED_YEARS) -- NOT included in total_detections_5yr/
+           # mean_annual_detections above, which keep their original
+           # 2019-2023 meaning unchanged.
+           "detections_2024", "detections_2025",
            "active_days_2019", "active_days_2020", "active_days_2021",
            "active_days_2022", "active_days_2023",
+           "active_days_2024", "active_days_2025",
            "detection_count", "mean_frp", "max_frp", "frp_ratio"]
 GROUP_C = ["trend_slope", "trend_direction", "std_annual_detections",
            "cv_annual_detections"]

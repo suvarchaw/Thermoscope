@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThermoScope — Monitoring</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="ts-topbar">
+  <div class="ts-topbar-brand">
+    <span class="ts-brand-name">ThermoScope</span>
+    <span class="ts-brand-subtitle">Gujarat · 2026 NRT monitoring</span>
+  </div>
+  <div class="ts-topbar-meta">
+    <span id="ts-freshness-indicator" class="ts-freshness-indicator" hidden>
+      <span id="ts-freshness-dot" class="ts-freshness-dot"></span>
+      <span id="ts-last-updated" class="ts-topbar-updated"></span>
+    </span>
+    <span id="ts-data-period" class="ts-topbar-period"></span>
+    <span id="ts-next-check" class="ts-topbar-next-check"></span>
+  </div>
+  <nav class="ts-topbar-nav">
+    <button class="ts-nav-btn is-active" data-view="monitoring">Monitoring</button>
+    <button class="ts-nav-btn" data-view="methodology">Methodology</button>
+  </nav>
+</header>
+
+<div id="ts-stale-banner" class="ts-banner ts-banner-stale" hidden></div>
+<div id="ts-error-banner" class="ts-banner ts-banner-error" hidden></div>
+
+<main>
+
+  <section id="ts-view-monitoring" class="ts-view">
+    <div id="ts-map" class="ts-map"></div>
+
+    <aside class="ts-panel">
+      <div id="ts-panel-list" class="ts-panel-state">
+        <div id="ts-filterbar" class="ts-filterbar">
+          <div class="ts-filter-group ts-temporal">
+            <h4 class="ts-eyebrow">Time window</h4>
+            <div id="ts-temporal-buttons" class="ts-temporal-buttons">
+              <button type="button" class="ts-temporal-btn" data-window="today">Today</button>
+              <button type="button" class="ts-temporal-btn" data-window="24h">24 Hrs</button>
+              <button type="button" class="ts-temporal-btn" data-window="7d">7 Days</button>
+              <button type="button" class="ts-temporal-btn" data-window="calendar">Calendar</button>
+            </div>
+            <div id="ts-temporal-description" class="ts-temporal-description"></div>
+            <div id="ts-temporal-calendar" class="ts-date-range" hidden>
+              <input type="date" id="ts-filter-date-from" aria-label="Start date from">
+              <input type="date" id="ts-filter-date-to" aria-label="Start date to">
+            </div>
+          </div>
+          <div class="ts-filter-group">
+            <input type="text" id="ts-filter-search" class="ts-search" placeholder="Search by event ID…">
+          </div>
+          <div class="ts-filter-group">
+            <h4 class="ts-eyebrow">Predicted class<span id="ts-filter-classes-count" class="ts-eyebrow-count"></span></h4>
+            <div id="ts-filter-classes" class="ts-chip-group"></div>
+          </div>
+          <div class="ts-filter-group">
+            <h4 class="ts-eyebrow">Status<span id="ts-filter-statuses-count" class="ts-eyebrow-count"></span></h4>
+            <div id="ts-filter-statuses" class="ts-chip-group"></div>
+          </div>
+          <div class="ts-filter-group">
+            <h4 class="ts-eyebrow">Land cover<span id="ts-filter-landcovers-count" class="ts-eyebrow-count"></span></h4>
+            <div id="ts-filter-landcovers" class="ts-chip-group ts-chip-group-scroll"></div>
+          </div>
+          <button id="ts-filter-clear" class="ts-clear-btn" type="button">Clear filters</button>
+        </div>
+
+        <div id="ts-summary" class="ts-summary" aria-live="polite"></div>
+        <div id="ts-list" class="ts-list"></div>
+      </div>
+
+      <div id="ts-panel-detail" class="ts-panel-state" hidden>
+        <button id="ts-back-btn" class="ts-back-btn" type="button">&larr; Back to list</button>
+        <div id="ts-detail-content"></div>
+      </div>
+    </aside>
+  </section>
+
+  <section id="ts-view-methodology" class="ts-view" hidden>
+    <div class="ts-methodology">
+      <nav class="ts-methodology-nav" aria-label="Methodology sections">
+        <div class="ts-eyebrow">On this page</div>
+        <a href="#firms">01 — FIRMS detections</a>
+        <a href="#event-construction">02 — Event construction</a>
+        <a href="#evidence">03 — Evidence sources</a>
+        <a href="#silver-labels">04 — Silver labels</a>
+        <a href="#lightgbm">05 — LightGBM classifier</a>
+        <a href="#evaluation">06 — Temporal vs. spatial evaluation</a>
+        <a href="#limitations">07 — Limitations</a>
+      </nav>
+      <div class="ts-methodology-content">
+      <h1>Methodology</h1>
+      <p class="ts-methodology-intro">
+        ThermoScope processes NASA FIRMS satellite fire/thermal detections
+        through a fixed, documented pipeline. This page describes exactly
+        what the system does and does not do.
+      </p>
+      <div class="ts-pipeline-flow" aria-hidden="true">
+        <span class="step">FIRMS</span><span class="arrow">→</span>
+        <span class="step">Events</span><span class="arrow">→</span>
+        <span class="step">Evidence</span><span class="arrow">→</span>
+        <span class="step">Silver labels</span><span class="arrow">→</span>
+        <span class="step">LightGBM</span><span class="arrow">→</span>
+        <span class="step">NRT inference</span>
+      </div>
+
+      <h2 id="firms">1. FIRMS detections</h2>
+      <p>
+        Detections come from NASA's FIRMS Area API for the VIIRS S-NPP
+        instrument, restricted to a fixed Gujarat bounding box
+        (20.0–24.7°N, 68.0–74.5°E). Two sources are used: <code>VIIRS_SNPP_SP</code>
+        (standard-processing, science-quality, used for the historical
+        record and the earlier part of 2026) and <code>VIIRS_SNPP_NRT</code>
+        (near-real-time, used for the ongoing 2026 update window). Each
+        detection is a single satellite observation with a location, time,
+        fire radiative power (FRP), and day/night flag.
+      </p>
+
+      <h2 id="event-construction">2. Event construction</h2>
+      <p>
+        Individual detections are grouped into <strong>events</strong> using
+        a spatiotemporal connected-components method: two detections belong
+        to the same event if they are within <strong>750 meters</strong> and
+        <strong>1 day</strong> of each other, applied transitively across a
+        whole chain of detections. Events with fewer than 2 member
+        detections are discarded as noise. An event's <strong>status</strong>
+        is <em>closed</em> once at least 1 day has passed since its last
+        detection with no further linkage possible, and
+        <em>provisional</em> otherwise — a provisional event could still be
+        extended by a future detection.
+      </p>
+
+      <h2 id="evidence">3. Evidence sources</h2>
+      <p>Each event is joined against independent external sources — none of these are model predictions:</p>
+      <ul>
+        <li><strong>OpenStreetMap industrial/power</strong> — tagged industrial land use, works, and power infrastructure.</li>
+        <li><strong>OpenStreetMap flare</strong> points.</li>
+        <li><strong>OpenStreetMap kiln/brickyard</strong> points — coverage in Gujarat is extremely sparse in the source data.</li>
+        <li><strong>WRI Global Power Plant Database</strong> — coal/gas/oil thermal plants.</li>
+        <li><strong>ESA WorldCover</strong> 10m land cover classification at the event centroid.</li>
+        <li><strong>Persistent cluster overlap</strong> — whether the event overlaps one of 60 recurring hotspot clusters identified from 2023 detections, and that cluster's recurrence strength.</li>
+      </ul>
+
+      <h2 id="silver-labels">4. Silver labels</h2>
+      <p>
+        The classifier is trained on <strong>silver labels</strong>: labels
+        produced by deterministic rules over FRP, night fraction, evidence
+        proximity, and seasonal timing — not human-verified ground truth.
+        <strong>Brick Kiln has zero real labeled examples</strong> in the
+        underlying data and is not a trained class. Events with
+        insufficient or conflicting rule matches are labeled
+        Unknown/Ambiguous and excluded from training.
+      </p>
+
+      <h2 id="lightgbm">5. LightGBM classifier</h2>
+      <p>
+        A single, fixed-configuration LightGBM model is trained once on
+        2019–2022 silver-labeled historical events, using 11 features
+        (location, spatial footprint, event status, detection-confidence
+        fractions, sensor scan/track geometry, point-cloud elongation,
+        time-of-day consistency, and detections-per-day). The model is
+        <strong>never retrained</strong> — 2026 data is inference-only.
+      </p>
+
+      <h2 id="evaluation">6. Temporal vs. spatial evaluation</h2>
+      <p>
+        Two different holdout designs were used to evaluate the model.
+        A <strong>temporal split</strong> (train on 2019–2022, test on
+        2023–2025) measures whether the model generalizes across time at
+        already-seen locations. A <strong>spatial split</strong> (holding
+        out entire 0.5°×0.5° geographic grid cells from training) measures
+        whether it generalizes to genuinely new locations.
+      </p>
+      <table class="ts-eval-table">
+        <thead><tr><th></th><th>Temporal split</th><th>Spatial split</th></tr></thead>
+        <tbody>
+          <tr><td>Balanced accuracy</td><td>0.935</td><td>0.459</td></tr>
+          <tr><td>Gas Flare F1</td><td>0.909</td><td>0.000</td></tr>
+          <tr><td>Industrial F1</td><td>0.972</td><td>0.112</td></tr>
+          <tr><td>Crop Residue F1</td><td>0.855</td><td>0.775</td></tr>
+          <tr><td>Forest/Wildfire F1</td><td>0.904</td><td>0.809</td></tr>
+        </tbody>
+      </table>
+      <p>
+        Crop Residue and Forest/Wildfire retain real, if reduced, signal
+        under genuine geographic holdout. Gas Flare and Industrial
+        collapse almost entirely — the model is largely recognizing
+        already-seen locations for those two classes, not learning
+        transferable source-type characteristics.
+      </p>
+
+      <h2 id="limitations">7. Limitations</h2>
+      <ul>
+        <li>The model is a <strong>forced 4-class classifier</strong> — it always outputs one of Crop Residue, Forest/Wildfire, Gas Flare, or Industrial, and cannot output Brick Kiln or "unknown."</li>
+        <li><strong>Industrial and Gas Flare</strong> predictions primarily reflect known-site recognition, not general new-source detection.</li>
+        <li>Silver labels are rule-based heuristics, not human-verified ground truth.</li>
+        <li>2026 data is inference-only and is never used to train or update the model.</li>
+      </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="js/csv.js"></script>
+<script src="js/format.js"></script>
+<script src="js/map.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

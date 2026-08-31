@@ -1,5 +1,6 @@
 """
-Cluster-level longitudinal feature table (2019-2023).
+Cluster-level longitudinal feature table (2019-2023, plus additive
+2024/2025 per-year detection counts -- see EXTENDED_YEARS below).
 
 Builds ONE new, additive artifact
 (data/processed/gujarat_cluster_longitudinal_features.csv) by combining:
@@ -32,7 +33,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from cross_year_recurrence_analysis import (
-    build_all_year_assignments, load_cluster_definitions,
+    build_all_year_assignments, load_cluster_definitions, SUMMARY_YEARS,
 )
 
 RECURRENCE_PROFILES_CSV = Path("data/processed/gujarat_cluster_recurrence_profiles.csv")
@@ -41,6 +42,19 @@ OUTPUT_CSV = Path("data/processed/gujarat_cluster_longitudinal_features.csv")
 
 YEARS = [2019, 2020, 2021, 2022, 2023]
 MONTHS = list(range(1, 13))
+
+# 2024 and 2025 were confirmed fully available via VIIRS_SNPP_SP (read-only
+# investigation, see PROGRESS.md/DECISIONS.md) and ingested/matched via the
+# existing, unchanged pipeline (firms_ingestion.py, cross_year_recurrence_
+# analysis.py). Their per-year detections_{year}/active_days_{year} columns
+# are added here ADDITIVELY, via the same existing zero-fill logic used for
+# YEARS above -- but YEARS itself is deliberately left unchanged, so every
+# existing aggregate statistic (total_detections_5yr, mean/std/cv_annual_
+# detections, trend_slope/direction, per_month_detection_counts,
+# top3_months_share, dominant_month) keeps its original 2019-2023 meaning
+# unchanged. Redefining YEARS to span 7 years would silently change what
+# "5yr" statistics mean without being asked to -- not done here.
+EXTENDED_YEARS = [2024, 2025]
 
 # A trend is only called "increasing"/"decreasing" if the slope magnitude
 # exceeds this fraction of the cluster's own mean annual detection count --
@@ -132,9 +146,20 @@ def load_cross_year_summary(path=CROSS_YEAR_CSV):
 
 
 def group_detections_by_cluster(assignments):
+    """Only rows from SUMMARY_YEARS (2019-2023) are grouped here -- the
+    resulting detection_rows feed compute_monthly_distribution, whose
+    output (per_month_detection_counts, top3_months_share, dominant_month)
+    is documented as "aggregated across all 5 years" and read downstream
+    by seasonality_category. Without this filter, 2024/2025 detections
+    would silently be absorbed into what is supposed to be a fixed 5-year
+    (2019-2023) seasonality summary -- the same class of issue fixed for
+    unique_years in cross_year_recurrence_analysis.py, here for the
+    monthly/seasonality distribution instead."""
     by_cluster = defaultdict(list)
     for row in assignments:
         if row["cluster_id"] == -1:
+            continue
+        if row["year"] not in SUMMARY_YEARS:
             continue
         by_cluster[row["cluster_id"]].append(row)
     return by_cluster
@@ -176,6 +201,15 @@ def build_feature_row(cluster_id, profile_row, cross_year_row, detection_rows):
     row["first_year"] = cross_year_row["first_year"]
     row["last_year"] = cross_year_row["last_year"]
     row["recurs_across_multiple_years"] = cross_year_row["recurs_across_multiple_years"]
+
+    # Additive 2024/2025 per-year counts -- same zero-fill logic as YEARS
+    # above, kept separate so it never alters the 2019-2023 "5yr" aggregates.
+    yearly_detections_extended = zero_fill(per_year, EXTENDED_YEARS)
+    yearly_active_days_extended = zero_fill(per_year_dates, EXTENDED_YEARS)
+    for year, count in zip(EXTENDED_YEARS, yearly_detections_extended):
+        row[f"detections_{year}"] = count
+    for year, count in zip(EXTENDED_YEARS, yearly_active_days_extended):
+        row[f"active_days_{year}"] = count
 
     return row
 

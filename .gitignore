@@ -23,3 +23,31 @@ Thumbs.db
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Large external geospatial cache (downloaded on demand, not tracked)
+data/external_cache/
+
+# Generated data outputs -- CSVs/JSON/trained-model artifacts/figures
+# produced by the pipeline scripts. Not committed: they're large and
+# fully regenerable by rerunning the scripts (see README.md), so the
+# repo stays lean and reproducibility comes from the code, not a data
+# snapshot. Same rationale already applied to data/external_cache/ above.
+data/raw/*.csv
+data/processed/*.csv
+data/processed/*.json
+data/processed/models/
+results/figures/*.png
+
+# Runtime lock file for the 2026 NRT update engine (transient, machine-specific)
+data/processed/.update_2026_nrt.lock
+
+# launchd job logs (machine-specific runtime output, not source)
+logs/*.log
+
+# Internal working docs (progress log, decisions log, architecture notes,
+# design spec, project brief, agent instructions) -- kept locally for
+# project continuity but not published; README.md is the public-facing
+# entry point and stays tracked. Matches basename at any depth, so a
+# subdirectory's own README.md (e.g. frontend/README.md) stays tracked too.
+*.md
+!README.md

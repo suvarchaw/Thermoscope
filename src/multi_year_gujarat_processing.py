@@ -115,7 +115,7 @@ def main():
         print(f"  {year}: {years_present[year]}")
 
     attempted_but_missing = [
-        y for y in [2019, 2020, 2021, 2022] if y not in years_present
+        y for y in [2019, 2020, 2021, 2022, 2024, 2025] if y not in years_present
     ]
     if attempted_but_missing:
         print(f"\nYears not yet ingested (see DECISIONS.md for the "
