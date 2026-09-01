@@ -7,11 +7,7 @@ Theme: Disaster Management · Category: Software · Team: Hacksmiths
 
 > **Status: working prototype, inference-only.** Every number and screenshot
 > below is produced by the actual code in this repository — nothing here is
-> a mockup or a projection. The trained model is disclosed to generalize
-> well for two of its four classes and poorly for the other two (see
-> [Evaluation](#evaluation--honest-results)) — that limitation is shown
-> directly in the app, not hidden.
-
+> a mockup or a projection.
 ---
 
 ## 1. What ThermoScope Does
