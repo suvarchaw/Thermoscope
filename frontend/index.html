@@ -34,54 +34,111 @@
 <div id="ts-stale-banner" class="ts-banner ts-banner-stale" hidden></div>
 <div id="ts-error-banner" class="ts-banner ts-banner-error" hidden></div>
 
+<div id="ts-temporal-bar" class="ts-temporal-bar">
+  <span class="ts-eyebrow ts-temporal-label">Time window</span>
+  <div id="ts-temporal-buttons" class="ts-temporal-buttons">
+    <button type="button" class="ts-temporal-btn" data-window="today">Today</button>
+    <button type="button" class="ts-temporal-btn" data-window="24h">24 Hrs</button>
+    <button type="button" class="ts-temporal-btn" data-window="7d">7 Days</button>
+    <button type="button" class="ts-temporal-btn ts-temporal-btn-calendar" data-window="calendar">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <rect x="1.5" y="2.5" width="13" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+        <line x1="1.5" y1="6" x2="14.5" y2="6" stroke="currentColor" stroke-width="1.3"/>
+        <line x1="4.5" y1="1" x2="4.5" y2="4" stroke="currentColor" stroke-width="1.3"/>
+        <line x1="11.5" y1="1" x2="11.5" y2="4" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+      Calendar
+    </button>
+  </div>
+  <div class="ts-temporal-range-box">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="ts-temporal-range-icon">
+      <rect x="1.5" y="2.5" width="13" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+      <line x1="1.5" y1="6" x2="14.5" y2="6" stroke="currentColor" stroke-width="1.3"/>
+      <line x1="4.5" y1="1" x2="4.5" y2="4" stroke="currentColor" stroke-width="1.3"/>
+      <line x1="11.5" y1="1" x2="11.5" y2="4" stroke="currentColor" stroke-width="1.3"/>
+    </svg>
+    <div class="ts-temporal-range-text">
+      <div id="ts-temporal-window-label" class="ts-temporal-window-label"></div>
+      <div id="ts-temporal-description" class="ts-temporal-description"></div>
+    </div>
+  </div>
+  <div id="ts-temporal-calendar" class="ts-date-range" hidden>
+    <input type="date" id="ts-filter-date-from" aria-label="Start date from">
+    <span class="ts-date-range-sep">–</span>
+    <input type="date" id="ts-filter-date-to" aria-label="Start date to">
+  </div>
+</div>
+
 <main>
 
   <section id="ts-view-monitoring" class="ts-view">
-    <div id="ts-map" class="ts-map"></div>
+    <div class="ts-map-area">
+      <div id="ts-map" class="ts-map"></div>
+
+      <div id="ts-detail-drawer" class="ts-detail-drawer" hidden>
+        <div class="ts-detail-drawer-header">
+          <div class="ts-detail-drawer-heading">
+            <span id="ts-detail-id" class="ts-detail-id"></span>
+            <span id="ts-detail-class-dot" class="ts-detail-class-dot"></span>
+            <span id="ts-detail-class-name" class="ts-detail-class"></span>
+            <span id="ts-detail-status" class="ts-status-badge"></span>
+          </div>
+          <div class="ts-detail-drawer-actions">
+            <button id="ts-detail-back" class="ts-detail-back" type="button">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <line x1="13" y1="8" x2="3" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <polyline points="7,4 3,8 7,12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Back to list
+            </button>
+            <button id="ts-detail-close" class="ts-detail-close" type="button" aria-label="Close event detail">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <line x1="2" y1="2" x2="14" y2="14" stroke="currentColor" stroke-width="1.6"/>
+                <line x1="14" y1="2" x2="2" y2="14" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="ts-detail-content" class="ts-detail-columns">
+          <div class="ts-detail-col ts-detail-col-map">
+            <div id="ts-detail-map" class="ts-detail-map"></div>
+            <div id="ts-detail-map-caption" class="ts-detail-map-caption"></div>
+          </div>
+          <div id="ts-detail-fields" class="ts-detail-fields"></div>
+        </div>
+      </div>
+    </div>
 
     <aside class="ts-panel">
-      <div id="ts-panel-list" class="ts-panel-state">
-        <div id="ts-filterbar" class="ts-filterbar">
-          <div class="ts-filter-group ts-temporal">
-            <h4 class="ts-eyebrow">Time window</h4>
-            <div id="ts-temporal-buttons" class="ts-temporal-buttons">
-              <button type="button" class="ts-temporal-btn" data-window="today">Today</button>
-              <button type="button" class="ts-temporal-btn" data-window="24h">24 Hrs</button>
-              <button type="button" class="ts-temporal-btn" data-window="7d">7 Days</button>
-              <button type="button" class="ts-temporal-btn" data-window="calendar">Calendar</button>
-            </div>
-            <div id="ts-temporal-description" class="ts-temporal-description"></div>
-            <div id="ts-temporal-calendar" class="ts-date-range" hidden>
-              <input type="date" id="ts-filter-date-from" aria-label="Start date from">
-              <input type="date" id="ts-filter-date-to" aria-label="Start date to">
-            </div>
-          </div>
-          <div class="ts-filter-group">
+      <div id="ts-filterbar" class="ts-filterbar">
+        <div class="ts-filter-group">
+          <div class="ts-search-wrap">
+            <svg class="ts-search-icon" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="7" cy="7" r="5.25" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="10.8" y1="10.8" x2="14.5" y2="14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
             <input type="text" id="ts-filter-search" class="ts-search" placeholder="Search by event ID…">
           </div>
-          <div class="ts-filter-group">
-            <h4 class="ts-eyebrow">Predicted class<span id="ts-filter-classes-count" class="ts-eyebrow-count"></span></h4>
-            <div id="ts-filter-classes" class="ts-chip-group"></div>
-          </div>
-          <div class="ts-filter-group">
-            <h4 class="ts-eyebrow">Status<span id="ts-filter-statuses-count" class="ts-eyebrow-count"></span></h4>
-            <div id="ts-filter-statuses" class="ts-chip-group"></div>
-          </div>
-          <div class="ts-filter-group">
-            <h4 class="ts-eyebrow">Land cover<span id="ts-filter-landcovers-count" class="ts-eyebrow-count"></span></h4>
-            <div id="ts-filter-landcovers" class="ts-chip-group ts-chip-group-scroll"></div>
-          </div>
-          <button id="ts-filter-clear" class="ts-clear-btn" type="button">Clear filters</button>
         </div>
-
-        <div id="ts-summary" class="ts-summary" aria-live="polite"></div>
-        <div id="ts-list" class="ts-list"></div>
+        <div class="ts-filter-group">
+          <h4 class="ts-eyebrow">Predicted class<span id="ts-filter-classes-count" class="ts-eyebrow-count"></span></h4>
+          <div id="ts-filter-classes" class="ts-chip-group"></div>
+        </div>
+        <div class="ts-filter-group">
+          <h4 class="ts-eyebrow">Status<span id="ts-filter-statuses-count" class="ts-eyebrow-count"></span></h4>
+          <div id="ts-filter-statuses" class="ts-chip-group"></div>
+        </div>
+        <div class="ts-filter-group">
+          <h4 class="ts-eyebrow">Land cover<span id="ts-filter-landcovers-count" class="ts-eyebrow-count"></span></h4>
+          <div id="ts-filter-landcovers" class="ts-chip-group ts-chip-group-scroll"></div>
+        </div>
       </div>
 
-      <div id="ts-panel-detail" class="ts-panel-state" hidden>
-        <button id="ts-back-btn" class="ts-back-btn" type="button">&larr; Back to list</button>
-        <div id="ts-detail-content"></div>
+      <div id="ts-summary" class="ts-summary" aria-live="polite">
+        <span id="ts-summary-text"></span>
+        <button id="ts-filter-clear" class="ts-clear-link" type="button">Clear all</button>
       </div>
+      <div id="ts-list" class="ts-list"></div>
     </aside>
   </section>
 
@@ -123,6 +180,15 @@
         (near-real-time, used for the ongoing 2026 update window). Each
         detection is a single satellite observation with a location, time,
         fire radiative power (FRP), and day/night flag.
+      </p>
+      <p class="ts-methodology-note">
+        This fixed rectangular bounding box is a working-assumption study
+        area, not a precise political boundary — near its corners it can
+        include small slivers of neighboring territory (for example, part
+        of the Rann of Kutch border region in the northwest). A handful of
+        real, correctly-plotted events near that corner may therefore
+        appear close to or across the Gujarat–Pakistan border on the map;
+        their coordinates are shown exactly as measured, never adjusted.
       </p>
 
       <h2 id="event-construction">2. Event construction</h2>
@@ -204,6 +270,7 @@
         <li><strong>Industrial and Gas Flare</strong> predictions primarily reflect known-site recognition, not general new-source detection.</li>
         <li>Silver labels are rule-based heuristics, not human-verified ground truth.</li>
         <li>2026 data is inference-only and is never used to train or update the model.</li>
+        <li>The Gujarat study area is a fixed rectangular bounding box, not a precise political boundary — see note in Section 1.</li>
       </ul>
       </div>
     </div>

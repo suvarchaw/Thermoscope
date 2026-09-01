@@ -8,9 +8,10 @@
  * file must satisfy.
  *
  * Spacing is drawn from one 4px scale (--sp-1..--sp-7) used consistently
- * across the top bar, filter area, list, detail panel, map controls, and
- * methodology page, so the app reads as one designed system rather than
- * independently styled components.
+ * across the top bar, temporal bar, filter area, list, detail drawer,
+ * map controls, and methodology page, so the app reads as one designed
+ * system rather than independently styled components. Control heights
+ * (inputs, chips, buttons) share the same vertical rhythm throughout.
  */
 
 :root {
@@ -23,7 +24,10 @@
   --text-secondary: #565c64;
   --text-tertiary: #8a8f96;
   --accent: #2f6fed;
-  --selected: #2f6fed;
+  /* Selection is a UI state ("this one, highlighted"), never a severity
+     or class signal -- deliberately a neutral charcoal, not the blue
+     interactive accent, and matches map.js's SELECTED_RING_COLOR. */
+  --selected: #14171a;
   --warning-bg: #fbf1dc;
   --warning-border: #caa457;
   --warning-text: #6b4c0f;
@@ -32,8 +36,8 @@
   --error-text: #7a3420;
 
   /* Map-marker class colors (against the light basemap) -- also the
-     colors used everywhere in the (now light) UI chrome, since both
-     contexts share the same light background again. */
+     colors used everywhere in the UI chrome, since both contexts share
+     the same light background. */
   --class-crop-residue: #8a5a2b;
   --class-forest-wildfire: #3f6b4f;
   --class-gas-flare: #1f7a72;
@@ -52,7 +56,8 @@
   --sp-6: 24px;
   --sp-7: 32px;
 
-  --kv-label-col: 178px;
+  --control-height: 32px;
+  --kv-label-col: 150px;
 }
 
 * { box-sizing: border-box; }
@@ -230,22 +235,113 @@ a { color: var(--accent); }
   color: inherit;
 }
 
+/* ---------------- Time-window bar (full width, above map+list) ---------------- */
+
+.ts-temporal-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.ts-temporal-label { margin: 0; flex: 0 0 auto; }
+
+.ts-temporal-buttons {
+  display: flex;
+  gap: var(--sp-2);
+  flex: 0 0 auto;
+}
+
+.ts-temporal-btn {
+  height: var(--control-height);
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ts-temporal-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+.ts-temporal-btn.is-active {
+  /* Active window is a neutral dark-charcoal fill, matching the
+     selection color used everywhere else -- not the blue accent. */
+  background: var(--selected);
+  border-color: var(--selected);
+  color: #ffffff;
+}
+
+.ts-temporal-range-box {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--control-height);
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  flex: 1 1 auto;
+  min-width: 220px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ts-temporal-range-icon { flex: 0 0 auto; color: var(--text-tertiary); }
+
+.ts-temporal-range-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+
+.ts-temporal-window-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.ts-temporal-description {
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ts-date-range { display: flex; align-items: center; gap: var(--sp-2); flex: 0 0 auto; }
+.ts-date-range-sep { color: var(--text-tertiary); }
+
 /* ---------------- Layout ---------------- */
 
 main { flex: 1 1 auto; min-height: 0; display: flex; }
 
 .ts-view { flex: 1 1 auto; display: flex; min-width: 0; min-height: 0; }
 
-#ts-view-monitoring { position: relative; }
-
-.ts-map {
+.ts-map-area {
   flex: 1 1 auto;
   min-width: 0;
+  position: relative;
 }
 
+.ts-map { position: absolute; inset: 0; }
+
 .ts-panel {
-  flex: 0 0 424px;
-  max-width: 424px;
+  flex: 0 0 400px;
+  max-width: 400px;
   border-left: 1px solid var(--border);
   background: var(--surface);
   display: flex;
@@ -253,48 +349,40 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
   min-height: 0;
 }
 
-.ts-panel-state {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.ts-panel-state[hidden] { display: none; }
-
-@media (max-width: 1024px) {
-  #ts-view-monitoring { flex-direction: column; }
-  .ts-map { flex: 0 0 48vh; }
-  .ts-panel { flex: 1 1 auto; max-width: none; border-left: none; border-top: 1px solid var(--border); }
-  .ts-topbar-next-check { display: none; }
-  .ts-topbar-meta { gap: var(--sp-4); }
-}
-
-@media (max-width: 640px) {
-  .ts-topbar { gap: var(--sp-1) var(--sp-3); padding: var(--sp-2) var(--sp-4); }
-  .ts-topbar-meta { flex-basis: 100%; order: 3; font-size: 11px; gap: var(--sp-3); }
-  .ts-brand-subtitle { display: none; }
-  .ts-topbar-next-check { display: none; }
-  .ts-methodology { flex-direction: column; padding: var(--sp-5) var(--sp-4) var(--sp-7); }
-  .ts-methodology-nav { position: static; flex: none; width: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 0 0 var(--sp-4); margin-bottom: var(--sp-5); }
-}
-
-/* ---------------- Filters ---------------- */
+/* ---------------- Filters (right panel) ---------------- */
 
 .ts-filterbar {
   flex: 0 0 auto;
   padding: var(--sp-4);
   border-bottom: 1px solid var(--border);
-  max-height: 52vh;
+  max-height: 46vh;
   overflow-y: auto;
 }
 
 .ts-filter-group { margin-bottom: var(--sp-4); }
 .ts-filter-group:last-of-type { margin-bottom: var(--sp-2); }
 
+.ts-search-wrap { position: relative; display: flex; align-items: center; }
+
+/* Absolutely-positioned elements ignore the parent's flex
+   align-items, so the icon needs its own explicit vertical centering
+   -- without top/transform it pins to the top of the input and reads
+   as misaligned/oversized. */
+.ts-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
 .ts-search, input[type="date"] {
   width: 100%;
-  padding: var(--sp-2) var(--sp-3);
+  height: var(--control-height);
+  padding: 0 var(--sp-3);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg);
@@ -304,41 +392,56 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
   color-scheme: light;
 }
 
+/* Room for the search icon -- must come after the shared padding rule
+   above (equal specificity, source order decides) or the shorthand
+   `padding` there resets padding-left back to var(--sp-3) and the icon
+   overlaps the placeholder text. */
+.ts-search { padding-left: 30px; }
+
 .ts-search::placeholder { color: var(--text-tertiary); }
 .ts-search:focus, input[type="date"]:focus { background: var(--surface-raised); border-color: var(--border-strong); }
 
-.ts-chip-group { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+/* Plain checkbox rows in a compact 2-column grid -- not bordered/
+   background "chip" buttons. A checked row reads through the checkbox's
+   own filled state (dark charcoal, never blue), not a colored box. */
+.ts-chip-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px var(--sp-3);
+}
 .ts-chip-group-scroll { max-height: 130px; overflow-y: auto; padding-right: 2px; }
 
 .ts-chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
-  padding: 5px 10px 5px 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg);
+  gap: 6px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: none;
   font-size: 12px;
   color: var(--text-secondary);
   cursor: pointer;
   line-height: 1.2;
+  min-width: 0;
 }
 
-.ts-chip:hover { border-color: var(--border-strong); color: var(--text); }
+.ts-chip:hover { color: var(--text); }
 
 .ts-chip input[type="checkbox"] {
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
   margin: 0;
-  accent-color: var(--accent);
+  flex: 0 0 auto;
+  accent-color: var(--selected);
 }
 
 .ts-chip:has(input:checked) {
-  background: var(--surface-raised);
-  border-color: var(--accent);
   color: var(--text);
   font-weight: 600;
 }
+
+.ts-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .ts-chip-swatch {
   width: 8px;
@@ -348,61 +451,30 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
   display: inline-block;
 }
 
-.ts-date-range { display: flex; gap: var(--sp-2); margin-top: var(--sp-2); }
-
-.ts-clear-btn {
-  width: 100%;
-  padding: var(--sp-2);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+.ts-clear-link {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  padding: 0;
   color: var(--text-secondary);
   font-size: 12px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.ts-clear-btn:not(:disabled):hover { border-color: var(--border-strong); color: var(--text); }
+.ts-clear-link:not(:disabled):hover { color: var(--text); }
+.ts-clear-link:disabled { text-decoration: none; }
 
-/* ---- Temporal selector (TODAY / 24 HRS / 7 DAYS / CALENDAR) ---- */
-
-.ts-temporal-buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--sp-2);
-}
-
-.ts-temporal-btn {
-  padding: var(--sp-2) var(--sp-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg);
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  text-align: center;
-}
-
-.ts-temporal-btn:hover { border-color: var(--border-strong); color: var(--text); }
-
-.ts-temporal-btn.is-active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #ffffff;
-}
-
-.ts-temporal-description {
-  margin-top: var(--sp-2);
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: var(--text-tertiary);
-  line-height: 1.5;
-}
-
-/* ---------------- List ---------------- */
+/* ---------------- Event list ---------------- */
 
 .ts-summary {
   flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-3);
   padding: var(--sp-2) var(--sp-4);
   font-size: 12px;
   color: var(--text-secondary);
@@ -410,6 +482,8 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
   font-family: var(--font-mono);
   background: var(--bg);
 }
+
+#ts-summary-text { min-width: 0; }
 
 .ts-list {
   flex: 1 1 auto;
@@ -427,6 +501,14 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
 
 .ts-list-row:hover { background: var(--surface-raised); }
 .ts-list-row:focus-visible { outline-offset: -2px; }
+
+/* Selected state: a background tint + bold class name -- deliberately
+   NOT a colored left stripe (prohibited) and not the interactive accent
+   color (reserved for controls, not list rows). */
+.ts-list-row.is-selected {
+  background: var(--surface-raised);
+}
+.ts-list-row.is-selected .ts-list-class { font-weight: 700; }
 
 .ts-list-marker {
   width: 9px;
@@ -486,46 +568,141 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
   text-align: center;
 }
 
-/* ---------------- Detail panel ---------------- */
+/* ---------------- Event detail drawer (overlays the lower map) ---------------- */
 
-.ts-back-btn {
+.ts-detail-drawer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 46%;
+  background: var(--surface);
+  border-top: 1px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  /* Leaflet's own controls (.leaflet-top/.leaflet-bottom, e.g. the
+     legend/zoom/reset) default to z-index:1000, well above Leaflet's
+     tile/marker panes -- found overlapping the drawer during mobile
+     testing regardless of which corner a control was moved to. 1200
+     guarantees the (fully opaque) drawer always covers any Leaflet
+     control it happens to overlap, not just the one that was visible
+     in whichever screen size was tested. */
+  z-index: 1200;
+}
+
+.ts-detail-drawer-header {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.ts-detail-drawer-heading { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+
+.ts-detail-id { font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); }
+
+.ts-detail-class-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+.ts-detail-class { font-size: 14px; font-weight: 700; }
+
+.ts-detail-drawer-actions { flex: 0 0 auto; display: flex; align-items: center; gap: var(--sp-3); }
+
+.ts-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: none;
   border: none;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  padding: var(--sp-3) var(--sp-4);
-  color: var(--accent);
-  font-size: 13px;
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
   font-weight: 500;
 }
 
-.ts-back-btn:hover { background: var(--surface-raised); }
+.ts-detail-back:hover { color: var(--text); }
 
-#ts-detail-content { flex: 1 1 auto; overflow-y: auto; padding: var(--sp-4); }
-
-.ts-detail-header { margin-bottom: var(--sp-5); }
-
-.ts-detail-id { font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); margin-bottom: var(--sp-1); }
-
-.ts-detail-class-row { display: flex; align-items: center; gap: var(--sp-2); }
-
-.ts-detail-class-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
-
-.ts-detail-class { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
-.ts-detail-class-caption { font-size: 11px; color: var(--text-tertiary); margin: 2px 0 var(--sp-2) 18px; }
-
-.ts-detail-section {
-  padding: var(--sp-4) 0;
-  border-top: 1px solid var(--border);
+.ts-detail-close {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
 }
+
+.ts-detail-close:hover { border-color: var(--border-strong); color: var(--text); background: var(--surface-raised); }
+
+/* Four columns -- [ MAP | 01 OBSERVED DATA | 02 EXTERNAL EVIDENCE |
+   03 MODEL OUTPUT ] -- of visually equal width. Structured as nested
+   flex rather than 4 flat items: the map column (.ts-detail-col-map) is
+   a stable element app.js never rewrites (it holds a live Leaflet
+   instance -- see map.js renderDetailMap), while the other 3 are
+   rebuilt from scratch on every selection via #ts-detail-fields.innerHTML.
+   #ts-detail-fields is itself a flex row of 3 equal columns, and (being
+   1 flex-basis-3 item against the map column's flex-basis-1) ends up
+   exactly as wide as 3 of its own children -- so all 4 columns end up
+   the same width without needing them to be flat DOM siblings. */
+.ts-detail-columns {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  padding: var(--sp-4);
+}
+
+.ts-detail-col { flex: 1 1 0; min-width: 0; }
+
+.ts-detail-col-map { display: flex; flex-direction: column; gap: 6px; }
+
+.ts-detail-map {
+  width: 100%;
+  height: 120px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.ts-detail-map-caption {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+#ts-detail-fields {
+  flex: 3 1 0;
+  min-width: 0;
+  display: flex;
+  gap: var(--sp-4);
+  border-left: 1px solid var(--border);
+  padding-left: var(--sp-4);
+  margin-left: var(--sp-4);
+}
+
+/* Divider between the 3 rebuilt columns -- true DOM siblings under
+   #ts-detail-fields, so the adjacent-sibling combinator applies cleanly. */
+#ts-detail-fields .ts-detail-col + .ts-detail-col {
+  border-left: 1px solid var(--border);
+  padding-left: var(--sp-4);
+}
+
+/* White, not grey -- the drawer's own surface color, so the Model
+   Output column reads as part of the same panel, set apart only by the
+   divider line, not a shaded "different" box. */
+.ts-detail-col-model { background: var(--surface); }
 
 .ts-kv {
   display: grid;
   grid-template-columns: var(--kv-label-col) 1fr;
-  column-gap: var(--sp-3);
+  column-gap: var(--sp-2);
   padding: 3px 0;
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.4;
 }
 
@@ -535,8 +712,6 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
 .ts-kv-label { color: var(--text-secondary); }
 .ts-kv-value { font-family: var(--font-mono); text-align: right; }
 .ts-kv-wide .ts-kv-value { text-align: left; }
-
-.ts-detail-model { background: var(--bg); margin: 0 calc(var(--sp-4) * -1) calc(var(--sp-4) * -1); padding: var(--sp-4) var(--sp-4) var(--sp-5); border-top: 1px solid var(--border); }
 
 .ts-model-flag {
   display: inline-block;
@@ -551,9 +726,9 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
 
 .ts-prob-row {
   display: grid;
-  grid-template-columns: var(--kv-label-col) 1fr 46px;
+  grid-template-columns: var(--kv-label-col) 1fr 42px;
   align-items: center;
-  column-gap: var(--sp-3);
+  column-gap: var(--sp-2);
   font-size: 12px;
   padding: 4px 0;
   color: var(--text-secondary);
@@ -594,10 +769,11 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: var(--sp-2) var(--sp-3);
+  padding: 7px var(--sp-3);
   font-size: 11px;
-  line-height: 1.7;
+  line-height: 1.4;
   color: var(--text);
+  box-shadow: none;
 }
 
 .ts-legend-title {
@@ -609,9 +785,40 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
   margin-bottom: 3px;
 }
 
+.ts-legend-title-main {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: var(--sp-2);
+}
+
 .ts-legend-title-status { margin-top: var(--sp-2); }
 
-.ts-legend-row { display: flex; align-items: center; gap: var(--sp-2); }
+/* The drawer overlays the bottom of the map and the legend sits
+   bottom-left -- on a short viewport the drawer's covered region can
+   reach the legend's position, so hide it while the drawer is open
+   rather than let an opaque panel visually collide with it. The legend
+   reappears the instant the drawer closes; nothing it shows is lost
+   since the drawer covers that same screen area anyway. */
+.ts-map-area:has(#ts-detail-drawer:not([hidden])) .ts-legend {
+  display: none;
+}
+
+.ts-legend-row { display: flex; align-items: center; gap: var(--sp-2); padding: 1.5px 0; }
+
+/* Class-color swatch -- was previously unstyled (no width/height), so it
+   rendered as an invisible 0x0 span and the legend never actually showed
+   which color maps to which class. Must stay pixel-identical to the
+   marker fill (fmt.CLASS_COLORS, applied inline by map.js). */
+.ts-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  display: inline-block;
+}
 
 .ts-legend-marker {
   width: 9px;
@@ -619,15 +826,21 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
   border-radius: 50%;
   border: 1.5px solid var(--text-secondary);
   display: inline-block;
+  flex: 0 0 auto;
 }
 
 .ts-legend-marker-closed { background: var(--text-secondary); }
 .ts-legend-marker-provisional { background: transparent; border-style: dashed; }
 
+/* Icon-only, same 26x26 box as the zoom +/- buttons directly above it
+   (same leaflet-bar visual language, Leaflet's own 10px stacking gap
+   between the two control groups keeps them vertically aligned). */
 .ts-reset-control a {
-  display: block;
-  padding: var(--sp-2) var(--sp-3);
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px !important;
+  height: 26px !important;
   background: var(--surface);
   color: var(--text);
   text-decoration: none;
@@ -637,9 +850,14 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
 
 .ts-cluster-wrap { background: none; border: none; }
 
+/* One neutral color family for all cluster tiers -- clusters must never
+   borrow a class color or read as more "important" than the individual
+   (brighter, categorical) markers they group. Size communicates count;
+   color stays subordinate and constant across tiers (only slightly
+   deepens at the largest tier, never approaching pure black). */
 .ts-cluster {
   border-radius: 50%;
-  background: var(--text-secondary);
+  background: #6d7178;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -651,7 +869,7 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
 
 .ts-cluster-sm { width: 26px; height: 26px; font-size: 10px; }
 .ts-cluster-md { width: 34px; height: 34px; font-size: 11px; }
-.ts-cluster-lg { width: 42px; height: 42px; font-size: 12px; background: var(--text); color: #ffffff; }
+.ts-cluster-lg { width: 42px; height: 42px; font-size: 12px; background: #52565d; color: #ffffff; }
 
 /* ---------------- Methodology page ---------------- */
 
@@ -703,6 +921,15 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
 .ts-methodology li { margin-bottom: 3px; }
 .ts-methodology code { font-family: var(--font-mono); background: var(--surface-raised); padding: 1px 5px; border-radius: 2px; font-size: 11.5px; }
 .ts-methodology strong { color: var(--text); }
+.ts-methodology-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--sp-3);
+  margin-top: var(--sp-3);
+}
 
 .ts-eval-table {
   width: 100%;
@@ -745,3 +972,75 @@ main { flex: 1 1 auto; min-height: 0; display: flex; }
 }
 
 .ts-pipeline-flow span.arrow { color: var(--text-tertiary); }
+
+/* ---------------- Responsive overrides ----------------
+   Deliberately placed at the very end of the file, after every base
+   rule they override: an earlier placement (as this file originally
+   had) loses to same-specificity base rules that appear later in
+   source order -- a real bug caught during the 2026-09 redesign's
+   mobile testing (the filter panel and detail drawer silently ignored
+   their mobile-only max-height/position overrides). Keeping all media
+   queries last avoids the whole class of bug rather than patching it
+   with per-rule specificity hacks. */
+
+@media (max-width: 1024px) {
+  .ts-view { flex-direction: column; }
+  .ts-map-area { flex: 0 0 46vh; }
+  .ts-panel { flex: 1 1 auto; max-width: none; border-left: none; border-top: 1px solid var(--border); }
+  .ts-topbar-next-check { display: none; }
+  .ts-topbar-meta { gap: var(--sp-4); }
+  /* A true bottom sheet: fixed to the viewport (not absolute within
+     .ts-map-area, which on mobile is shorter than a comfortable sheet
+     height -- an absolute sheet taller than its container would overflow
+     past the container's own top edge instead of the screen's). */
+  .ts-detail-drawer { position: fixed; max-height: 62vh; }
+  .ts-detail-columns { flex-direction: column; }
+  /* Stacked layout: columns should size to their own content, not split
+     the drawer's height equally the way the desktop row does. */
+  .ts-detail-col-map { flex: 0 0 auto; }
+  .ts-detail-map { height: 140px; }
+  /* Stack all 4 columns vertically -- #ts-detail-fields switches from a
+     row of 3 to a column of 3, sized to its own content (not split
+     equally with the map column), and every divider switches from a
+     left border to a top border to match. */
+  #ts-detail-fields {
+    flex: 1 1 auto;
+    flex-direction: column;
+    border-left: none;
+    padding-left: 0;
+    margin-left: 0;
+    border-top: 1px solid var(--border);
+    padding-top: var(--sp-4);
+    margin-top: var(--sp-4);
+    gap: var(--sp-4);
+  }
+  #ts-detail-fields .ts-detail-col + .ts-detail-col {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--border);
+    padding-top: var(--sp-4);
+  }
+}
+
+@media (max-width: 640px) {
+  .ts-topbar { gap: var(--sp-1) var(--sp-3); padding: var(--sp-2) var(--sp-4); }
+  .ts-topbar-meta { flex-basis: 100%; order: 3; font-size: 11px; gap: var(--sp-3); }
+  .ts-brand-subtitle { display: none; }
+  .ts-topbar-next-check { display: none; }
+  .ts-temporal-bar { padding: var(--sp-2) var(--sp-4); }
+  .ts-temporal-buttons { flex-wrap: wrap; }
+  .ts-temporal-range-box { flex-basis: 100%; order: 3; min-width: 0; }
+  /* Smaller viewport, more stacked chrome above it (header + temporal bar
+     + map) -- cap the filter area so the event list is reachable without
+     scrolling past a full screen of filters first; filters stay fully
+     reachable via their own internal scroll. */
+  .ts-map-area { flex-basis: 32vh; }
+  .ts-filterbar { max-height: 24vh; }
+  /* Shorter map viewport on mobile -- keep the legend compact so it
+     doesn't dominate the limited map area. */
+  .ts-legend { font-size: 10px; padding: 5px 7px; line-height: 1.25; }
+  .ts-legend-swatch, .ts-legend-marker { width: 8px; height: 8px; }
+  .ts-legend-title-status { margin-top: 4px; }
+  .ts-methodology { flex-direction: column; padding: var(--sp-5) var(--sp-4) var(--sp-7); }
+  .ts-methodology-nav { position: static; flex: none; width: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 0 0 var(--sp-4); margin-bottom: var(--sp-5); }
+}

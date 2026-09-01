@@ -24,10 +24,10 @@
   // for MAP markers, which sit on a light basemap regardless of the
   // app's dark chrome.
   var CLASS_COLORS = {
-    Crop_Residue: "#8a5a2b",
-    Forest_Wildfire: "#3f6b4f",
-    Gas_Flare: "#1f7a72",
-    Industrial: "#3b5a8a",
+    Crop_Residue: "#c1791f",
+    Forest_Wildfire: "#2f9959",
+    Gas_Flare: "#0ea89b",
+    Industrial: "#3163d9",
   };
 
   // Same 4 categorical identities (same hue per class -- amber, green,
@@ -139,6 +139,74 @@
     return date.toISOString().slice(11, 16) + " UTC";
   }
 
+  // ---------------------------------------------------------------
+  // IST display (2026-09 redesign). All user-facing times are shown in
+  // India Standard Time (UTC+5:30, no DST) via Intl's IANA tz database --
+  // not manual offset arithmetic, so it's correct regardless of the
+  // viewer's own locale/timezone. The underlying data (run_date,
+  // last_updated_utc) is unchanged; this only affects display formatting.
+  // ---------------------------------------------------------------
+  var IST_TIMEZONE = "Asia/Kolkata";
+
+  function formatClockIST(dateOrIso) {
+    var d = dateOrIso instanceof Date ? dateOrIso : new Date(dateOrIso);
+    var formatted = new Intl.DateTimeFormat("en-GB", {
+      timeZone: IST_TIMEZONE, hour: "2-digit", minute: "2-digit", hour12: false,
+    }).format(d);
+    return formatted + " IST";
+  }
+
+  var MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  function formatDateIST(dateOrIso) {
+    var d = dateOrIso instanceof Date ? dateOrIso : new Date(dateOrIso);
+    // Read day/month/year as numeric parts in the IST timezone, then apply
+    // our own fixed month abbreviations -- Intl's locale-formatted month
+    // names vary by locale/ICU version (e.g. en-GB renders "Sept", not
+    // "Sep"), which would make this display inconsistent across browsers.
+    var parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: IST_TIMEZONE, day: "2-digit", month: "numeric", year: "numeric",
+    }).formatToParts(d);
+    var day, month, year;
+    parts.forEach(function (p) {
+      if (p.type === "day") day = p.value;
+      if (p.type === "month") month = p.value;
+      if (p.type === "year") year = p.value;
+    });
+    return day + " " + MONTH_ABBR[parseInt(month, 10) - 1] + " " + year;
+  }
+
+  function formatDateTimeIST(dateOrIso) {
+    return formatDateIST(dateOrIso) + " " + formatClockIST(dateOrIso);
+  }
+
+  // A plain "YYYY-MM-DD" (calendar-day granularity, e.g. event start_date)
+  // has no time-of-day to convert -- format it as a plain IST calendar
+  // date without implying a clock time that doesn't exist in the data.
+  function formatCalendarDate(isoDate) {
+    if (isBlank(isoDate)) return "—";
+    return formatDateIST(isoDate + "T00:00:00Z");
+  }
+
+  // ---------------------------------------------------------------
+  // Defensive coordinate validation (2026-09 map bug-fix milestone).
+  // Every event plotted on the map must pass this check first; an event
+  // that fails is skipped (never rendered) and logged -- never silently
+  // coerced/mutated to "fit". Uses the exact same GUJARAT_BOUNDS the
+  // rest of the app already uses (the pipeline's own bounding box,
+  // src/spatial_recurrence.py LAT_MIN/MAX/LON_MIN/MAX) -- not a
+  // different/tighter boundary invented to hide real data.
+  // ---------------------------------------------------------------
+  function isValidGujaratCoordinate(lat, lon) {
+    if (typeof lat !== "number" || typeof lon !== "number") return false;
+    if (isNaN(lat) || isNaN(lon)) return false;
+    if (!isFinite(lat) || !isFinite(lon)) return false;
+    return (
+      lat >= GUJARAT_BOUNDS.latMin && lat <= GUJARAT_BOUNDS.latMax &&
+      lon >= GUJARAT_BOUNDS.lonMin && lon <= GUJARAT_BOUNDS.lonMax
+    );
+  }
+
   function isStale(isoTimestamp, now, thresholdSeconds) {
     var threshold = thresholdSeconds === undefined ? STALE_THRESHOLD_SECONDS : thresholdSeconds;
     return secondsSince(isoTimestamp, now) > threshold;
@@ -245,6 +313,11 @@
     isStale: isStale,
     nextScheduledCheckUTC: nextScheduledCheckUTC,
     formatClockUTC: formatClockUTC,
+    formatClockIST: formatClockIST,
+    formatDateIST: formatDateIST,
+    formatDateTimeIST: formatDateTimeIST,
+    formatCalendarDate: formatCalendarDate,
+    isValidGujaratCoordinate: isValidGujaratCoordinate,
     formatRelativeTime: formatRelativeTime,
     sortByStartDateDesc: sortByStartDateDesc,
     applyFilters: applyFilters,

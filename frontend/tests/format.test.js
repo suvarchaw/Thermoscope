@@ -142,3 +142,43 @@ test("nextScheduledCheckUTC adds exactly the real scheduler interval (1800s), no
   const next = fmt.nextScheduledCheckUTC("2026-08-31T19:16:58.000Z");
   assert.equal(next.toISOString(), "2026-08-31T19:46:58.000Z");
 });
+
+test("formatClockIST converts UTC to IST (UTC+5:30), no DST", () => {
+  // 19:16 UTC -> 00:46 IST (next calendar day)
+  assert.equal(fmt.formatClockIST("2026-08-31T19:16:00.000Z"), "00:46 IST");
+  // 04:06 UTC -> 09:36 IST (same calendar day)
+  assert.equal(fmt.formatClockIST("2026-09-01T04:06:00.000Z"), "09:36 IST");
+});
+
+test("formatDateIST reflects the IST calendar day, which can differ from the UTC calendar day", () => {
+  // 19:16 UTC on Aug 31 is already Sep 1 in IST
+  assert.equal(fmt.formatDateIST("2026-08-31T19:16:00.000Z"), "01 Sep 2026");
+});
+
+test("formatCalendarDate formats a date-only (no time-of-day) value without inventing a clock time", () => {
+  assert.equal(fmt.formatCalendarDate("2026-08-31"), "31 Aug 2026");
+  assert.equal(fmt.formatCalendarDate(""), "—");
+});
+
+test("isValidGujaratCoordinate accepts real in-bounds coordinates", () => {
+  // EVT2026_003488's real centroid (see data/processed/gujarat_2026_inference.csv)
+  assert.equal(fmt.isValidGujaratCoordinate(21.1013, 72.6377), true);
+});
+
+test("isValidGujaratCoordinate accepts a coordinate at the exact bbox edge", () => {
+  assert.equal(fmt.isValidGujaratCoordinate(fmt.GUJARAT_BOUNDS.latMin, fmt.GUJARAT_BOUNDS.lonMin), true);
+  assert.equal(fmt.isValidGujaratCoordinate(fmt.GUJARAT_BOUNDS.latMax, fmt.GUJARAT_BOUNDS.lonMax), true);
+});
+
+test("isValidGujaratCoordinate rejects coordinates outside the pipeline's own bounding box", () => {
+  assert.equal(fmt.isValidGujaratCoordinate(30.0, 72.0), false); // lat too high
+  assert.equal(fmt.isValidGujaratCoordinate(21.0, 80.0), false); // lon too high
+  assert.equal(fmt.isValidGujaratCoordinate(10.0, 72.0), false); // lat too low
+});
+
+test("isValidGujaratCoordinate rejects NaN/non-finite/non-numeric input rather than crashing", () => {
+  assert.equal(fmt.isValidGujaratCoordinate(NaN, 72.0), false);
+  assert.equal(fmt.isValidGujaratCoordinate(21.0, Infinity), false);
+  assert.equal(fmt.isValidGujaratCoordinate(null, 72.0), false);
+  assert.equal(fmt.isValidGujaratCoordinate("21.0", "72.0"), false); // strings, not numbers -- caller must parse first
+});
