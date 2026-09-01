@@ -172,7 +172,7 @@
     var indicator = $("ts-freshness-indicator");
     indicator.hidden = false;
     indicator.title = fmt.formatDateTimeIST(f.last_updated_utc) + " — " + f.n_events + " events, " +
-      f.n_closed + " closed, " + f.n_provisional + " provisional";
+      f.n_closed + " closed, " + f.n_provisional + " active";
     $("ts-freshness-dot").classList.toggle("is-stale", stale);
 
     var staleBanner = $("ts-stale-banner");
@@ -202,7 +202,7 @@
 
     var statusGroup = $("ts-filter-statuses");
     statusGroup.innerHTML = ["closed", "provisional"].map(function (s) {
-      return checkboxHtml("status", s, s.charAt(0).toUpperCase() + s.slice(1));
+      return checkboxHtml("status", s, fmt.STATUS_LABELS[s]);
     }).join("");
 
     var landCoverGroup = $("ts-filter-landcovers");
@@ -416,7 +416,7 @@
     var f = state.freshness;
     var text =
       filteredCount + " of " + f.n_events + " events shown · " +
-      f.n_closed + " closed · " + f.n_provisional + " provisional";
+      f.n_closed + " closed · " + f.n_provisional + " active";
     if (state.temporalWindow) {
       text += " (Filters: " + TEMPORAL_LABELS[state.temporalWindow] + ")";
     }
@@ -472,7 +472,7 @@
       '<span class="ts-list-date">' + fmt.formatCalendarDate(r.start_date) + "</span>" +
       "</div>" +
       "</div>" +
-      '<span class="ts-status-badge ts-status-' + r.status + '">' + r.status + "</span>" +
+      '<span class="ts-status-badge ts-status-' + r.status + '">' + fmt.STATUS_LABELS[r.status] + "</span>" +
       "</div>"
     );
   }
@@ -522,7 +522,7 @@
     $("ts-detail-class-name").textContent = fmt.CLASS_LABELS[r.predicted_class];
     $("ts-detail-class-name").style.color = color;
     var statusBadge = $("ts-detail-status");
-    statusBadge.textContent = r.status;
+    statusBadge.textContent = fmt.STATUS_LABELS[r.status];
     statusBadge.title = statusDef;
     statusBadge.className = "ts-status-badge ts-status-" + r.status;
 

@@ -69,6 +69,16 @@
     provisional: "A future detection could still extend this event.",
   };
 
+  // Display-only rename ("provisional" -> "Active") -- the underlying
+  // data value stays "provisional" everywhere (CSV status column,
+  // filter values, CSS class names) since that's what the real
+  // pipeline output actually contains; only the label shown to the
+  // user changes.
+  var STATUS_LABELS = {
+    closed: "Closed",
+    provisional: "Active",
+  };
+
   var EVIDENCE_DISTANCE_FIELDS = [
     { key: "nearest_osm_industrial_power_m", label: "Nearest OSM industrial/power" },
     { key: "nearest_gppd_thermal_plant_m", label: "Nearest GPPD thermal plant" },
@@ -301,6 +311,7 @@
     STALE_THRESHOLD_SECONDS: STALE_THRESHOLD_SECONDS,
     POLL_INTERVAL_MS: POLL_INTERVAL_MS,
     STATUS_DEFINITIONS: STATUS_DEFINITIONS,
+    STATUS_LABELS: STATUS_LABELS,
     EVIDENCE_DISTANCE_FIELDS: EVIDENCE_DISTANCE_FIELDS,
     isBlank: isBlank,
     toNumber: toNumber,

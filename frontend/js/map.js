@@ -146,7 +146,7 @@
         classRows +
         '<div class="ts-legend-title ts-legend-title-status">Status</div>' +
         '<div class="ts-legend-row"><span class="ts-legend-marker ts-legend-marker-closed"></span><span>Closed</span></div>' +
-        '<div class="ts-legend-row"><span class="ts-legend-marker ts-legend-marker-provisional"></span><span>Provisional</span></div>';
+        '<div class="ts-legend-row"><span class="ts-legend-marker ts-legend-marker-provisional"></span><span>Active</span></div>';
       L.DomEvent.disableClickPropagation(div);
       return div;
     };
