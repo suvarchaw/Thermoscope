@@ -1,12 +1,18 @@
-name: Deploy to Pages
+name: Refresh data and deploy
 on:
+  schedule:
+    - cron: "*/30 * * * *"   # GitHub may delay or skip runs under load
   push:
     branches: [main]
+    paths: [".github/workflows/pages.yml", "frontend/**"]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+concurrency:
+  group: refresh
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,7 +21,27 @@ jobs:
       url: ${{ steps.d.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - run: mkdir _site && cp -r frontend _site/frontend && mkdir -p _site/data/processed && cp data/processed/gujarat_2026_inference* _site/data/processed/ && echo '<meta http-equiv="refresh" content="0; url=frontend/">' > _site/index.html
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - run: pip install -r requirements.txt python-dotenv requests pandas numpy
+      - uses: actions/cache@v4
+        with:
+          path: data/external_cache
+          key: worldcover-v200
+      - name: Refresh NRT data
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: python src/update_2026_nrt.py
+      - name: Commit new snapshot
+        run: |
+          git config user.name "thermoscope-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -f data/raw/firms_gujarat_2026.csv data/processed/gujarat_thermal_events_2026.csv data/processed/gujarat_event_evidence_2026.csv data/processed/gujarat_2026_inference.csv data/processed/gujarat_2026_inference_freshness.json
+          git diff --cached --quiet || (git commit -qm "Auto-refresh 2026 snapshot" && git pull -q --rebase && git push -q)
+      - run: |
+          mkdir _site && cp -r frontend _site/frontend && mkdir -p _site/data/processed
+          cp data/processed/gujarat_2026_inference* _site/data/processed/
+          echo '<meta http-equiv="refresh" content="0; url=frontend/">' > _site/index.html
       - uses: actions/upload-pages-artifact@v3
         with: { path: _site }
       - id: d
