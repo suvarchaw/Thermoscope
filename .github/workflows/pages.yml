@@ -36,8 +36,12 @@ jobs:
         run: |
           git config user.name "thermoscope-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add -f data/raw/firms_gujarat_2026.csv data/processed/gujarat_thermal_events_2026.csv data/processed/gujarat_event_evidence_2026.csv data/processed/gujarat_2026_inference.csv data/processed/gujarat_2026_inference_freshness.json
-          git diff --cached --quiet || (git commit -qm "Auto-refresh 2026 snapshot" && git pull -q --rebase --autostash && git push -q)
+          F="data/raw/firms_gujarat_2026.csv data/processed/gujarat_thermal_events_2026.csv data/processed/gujarat_event_evidence_2026.csv data/processed/gujarat_2026_inference.csv data/processed/gujarat_2026_inference_freshness.json"
+          git add -f $F 2>&1 || { echo "::error::add failed: $(git add -f $F 2>&1; ls data/raw data/processed | tr '\n' ' ')"; exit 1; }
+          git diff --cached --quiet && exit 0
+          git commit -qm "Auto-refresh 2026 snapshot"
+          git pull -q --rebase --autostash 2>&1 || { echo "::error::pull failed: $(git pull --rebase --autostash 2>&1 | tr '\n' ' ')"; exit 1; }
+          git push -q 2>&1 || { echo "::error::push failed: $(git push 2>&1 | tr '\n' ' ')"; exit 1; }
       - run: |
           mkdir _site && cp -r frontend _site/frontend && mkdir -p _site/data/processed
           cp data/processed/gujarat_2026_inference* _site/data/processed/
