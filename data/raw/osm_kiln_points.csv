@@ -1,0 +1,3 @@
+osm_type,osm_id,lat,lon,tags
+way,1339782764,22.3222369,72.7870491,industrial=brickyard;landuse=industrial;man_made=kiln
+way,1544594989,22.2892948,69.0377951,industrial=brickyard;landuse=industrial;name=Bricks

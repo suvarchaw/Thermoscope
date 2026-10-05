@@ -1,0 +1,71 @@
+{
+  "status": "EXPLORATORY ARTIFACT -- NOT PRODUCTION READY",
+  "trained_on": "2026-08-31",
+  "sklearn_version": "1.9.0",
+  "python_version": "3.14.5",
+  "random_state": 42,
+  "target_definition": "1 if detections_(Y+1)(cluster) > 0 else 0",
+  "train_transitions": [
+    [
+      2019,
+      2020
+    ],
+    [
+      2020,
+      2021
+    ],
+    [
+      2021,
+      2022
+    ],
+    [
+      2023,
+      2024
+    ]
+  ],
+  "held_out_test_transition": [
+    [
+      2024,
+      2025
+    ]
+  ],
+  "supersedes": "original MVP artifact (train=2019-20,2020-21 / test=2021-22), kept and reported separately for comparison, see next_year_recurrence_metrics.csv",
+  "n_train": 240,
+  "n_test": 60,
+  "feature_columns_numeric": [
+    "detections_Y",
+    "active_days_Y",
+    "centroid_lat",
+    "centroid_lon",
+    "extent_radius_m",
+    "bbox_min_lat",
+    "bbox_max_lat",
+    "bbox_min_lon",
+    "bbox_max_lon",
+    "nearest_distance_m",
+    "nearest_is_named",
+    "has_notable_osm_context",
+    "n_industrial",
+    "n_power",
+    "n_waste",
+    "n_agricultural",
+    "n_transport",
+    "n_other",
+    "features_found_in_radius"
+  ],
+  "feature_columns_categorical": [
+    "nearest_group"
+  ],
+  "extended_primary_test_balanced_accuracy": {
+    "baseline": 0.5,
+    "logistic_regression": 0.738544474393531,
+    "random_forest": 0.738544474393531
+  },
+  "caveats": [
+    "Trained on rows pooled from only 60 underlying clusters across 4 transitions (pooled rows not independent).",
+    "Held-out test set (2024->2025) has 7 negative (non-recurrence) examples.",
+    "Single forward holdout, not cross-validated -- low statistical power.",
+    "Cluster geometry (features like extent_radius_m, centroid) was itself derived from 2023 DBSCAN output, a structural limitation inherited unchanged from prior milestones and unaffected by adding 2024/2025 -- the spatial frame is still the 60 zones 2023 was dense enough to discover, not new zones that emerged since.",
+    "Do not use for any production, deployment, or decision-making purpose."
+  ]
+}

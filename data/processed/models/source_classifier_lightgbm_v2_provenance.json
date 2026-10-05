@@ -1,0 +1,59 @@
+{
+  "status": "EXPLORATORY ARTIFACT -- NOT PRODUCTION READY. Trained on SILVER labels, not human-verified ground truth. Brick Kiln is not a supported class.",
+  "trained_on": "2026-08-31",
+  "sklearn_version": "1.9.0",
+  "lightgbm_version": "4.7.0",
+  "python_version": "3.14.5",
+  "random_state": 42,
+  "trained_classes": [
+    "Industrial",
+    "Gas_Flare",
+    "Crop_Residue",
+    "Forest_Wildfire"
+  ],
+  "feature_columns_numeric": [
+    "centroid_lat",
+    "centroid_lon",
+    "spatial_extent_m",
+    "frac_high_confidence",
+    "frac_low_confidence",
+    "mean_scan",
+    "mean_track",
+    "elongation_ratio",
+    "time_of_day_std_minutes",
+    "detections_per_day"
+  ],
+  "feature_columns_categorical": [
+    "status"
+  ],
+  "train_years": [
+    2019,
+    2020,
+    2021,
+    2022
+  ],
+  "test_years": [
+    2023,
+    2024,
+    2025
+  ],
+  "lightgbm_params": {
+    "n_estimators": 100,
+    "max_depth": 4,
+    "num_leaves": 15,
+    "learning_rate": 0.1,
+    "class_weight": "balanced",
+    "random_state": 42,
+    "verbosity": -1
+  },
+  "reload_requirement": "Requires scikit-learn's bundled libomp.dylib to be reachable via DYLD_LIBRARY_PATH on macOS -- see this module's self-reexec shim. Not required on Linux/Windows with a normal LightGBM install.",
+  "test_macro_f1": 0.9099508831344069,
+  "test_balanced_accuracy": 0.9353854390925587,
+  "test_gas_flare_pr_auc": 0.9721989948693762,
+  "caveats": [
+    "Labels are deterministic rule outputs (silver labels), not human-verified ground truth.",
+    "Gas_Flare has very few examples -- treat its metrics as low-confidence.",
+    "Fixed hyperparameters, not tuned -- see LIGHTGBM_PARAMS.",
+    "Do not use for any production, deployment, or decision-making purpose."
+  ]
+}
