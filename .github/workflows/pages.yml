@@ -31,7 +31,9 @@ jobs:
       - name: Refresh NRT data
         env:
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
-        run: python src/update_2026_nrt.py
+        run: |
+          python src/update_2026_nrt.py | tee out.txt
+          if grep -q BLOCKED out.txt; then echo "::error::$(tr '\n' ' ' < out.txt)"; exit 1; fi
       - name: Commit new snapshot
         run: |
           git config user.name "thermoscope-bot"
