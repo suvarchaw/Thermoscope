@@ -1,0 +1,22 @@
+name: Deploy to Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdir _site && cp -r frontend _site/frontend && mkdir -p _site/data/processed && cp data/processed/gujarat_2026_inference* _site/data/processed/ && echo '<meta http-equiv="refresh" content="0; url=frontend/">' > _site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: _site }
+      - id: d
+        uses: actions/deploy-pages@v4
