@@ -1,7 +1,7 @@
 name: Refresh data and deploy
 on:
   schedule:
-    - cron: "*/30 * * * *"   # GitHub may delay or skip runs under load
+    - cron: "7,37 * * * *"   # off-peak minutes: GitHub drops/delays the busy :00/:30 slots
   push:
     branches: [main]
     paths: [".github/workflows/pages.yml", "frontend/**"]
