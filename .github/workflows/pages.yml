@@ -41,7 +41,8 @@ jobs:
           for f in data/raw/firms_gujarat_2026.csv data/processed/gujarat_thermal_events_2026.csv data/processed/gujarat_event_evidence_2026.csv data/processed/gujarat_2026_inference.csv data/processed/gujarat_2026_inference_freshness.json; do [ -f $f ] && git add -f $f; done
           git diff --cached --quiet && exit 0
           git commit -qm "Auto-refresh 2026 snapshot"
-          git pull -q --rebase --autostash 2>&1 || { echo "::error::pull failed: $(git pull --rebase --autostash 2>&1 | tr '\n' ' ')"; exit 1; }
+          git reset -q --hard HEAD  # drop stray tracked-file edits so rebase can run
+          git pull -q --rebase -X theirs 2>&1 || { echo "::error::pull failed: $(git status -sb 2>&1 | tr '\n' ' ')"; exit 1; }
           git push -q 2>&1 || { echo "::error::push failed: $(git push 2>&1 | tr '\n' ' ')"; exit 1; }
       - run: |
           mkdir _site && cp -r frontend _site/frontend && mkdir -p _site/data/processed
