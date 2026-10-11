@@ -36,8 +36,8 @@ jobs:
           if grep -q BLOCKED out.txt; then echo "::error::$(tr '\n' ' ' < out.txt)"; exit 1; fi
       - name: Commit new snapshot
         run: |
-          git config user.name "thermoscope-bot"
-          git config user.email "bot@users.noreply.github.com"
+          git config user.name "suvarchaw"
+          git config user.email "99994522+suvarchaw@users.noreply.github.com"
           for f in data/raw/firms_gujarat_2026.csv data/processed/gujarat_thermal_events_2026.csv data/processed/gujarat_event_evidence_2026.csv data/processed/gujarat_2026_inference.csv data/processed/gujarat_2026_inference_freshness.json; do [ -f $f ] && git add -f $f; done
           git diff --cached --quiet && exit 0
           git commit -qm "Auto-refresh 2026 snapshot"
