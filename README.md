@@ -1,13 +1,28 @@
 # ThermoScope
 
-**Smart India Hackathon 2026 — Problem Statement SIH26162 (NTRO)**
-"AI-Based Detection and Classification of Industrial Fires and Persistent
-Thermal Sources Using NASA FIRMS, OSM & Satellite Data."
-Theme: Disaster Management · Category: Software · Team: Hacksmiths
+Classifies persistent thermal sources in NASA FIRMS satellite detections over
+Gujarat (crop burning, wildfire, gas flares, industrial heat) using OSM and
+land-cover evidence plus a LightGBM model, with a near-real-time dashboard.
+
+**[Live dashboard →](https://suvarchaw.github.io/Thermoscope/frontend/)**
+
+[![ThermoScope dashboard](docs/dashboard.png)](https://suvarchaw.github.io/Thermoscope/frontend/)
+
+| Temporal split | Spatial holdout |
+|---|---|
+| **0.935** balanced accuracy | **0.459** balanced accuracy |
+| Generalizes forward in time | Generalizes to *new locations* |
+
+Always read these two together: the gap is explained in
+[Evaluation](#evaluation--honest-results).
+
+Built for Smart India Hackathon 2026 (SIH26162, NTRO). I was team lead of
+Team Hacksmiths.
 
 > **Status: working prototype, inference-only.** Every number and screenshot
 > below is produced by the actual code in this repository — nothing here is
 > a mockup or a projection.
+
 ---
 
 ## 1. What ThermoScope Does
@@ -323,7 +338,6 @@ purpose:
   timestamp-level, event boundaries).
 - Gujarat / the current bounding box is a working assumption, not a
   validated final scope.
-- No license file is currently included in this repository.
 
 ---
 

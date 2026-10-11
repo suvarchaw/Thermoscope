@@ -11,6 +11,8 @@
   var MapLib = window.ThermoScopeMap;
 
   var CSV_URL = "../data/processed/gujarat_2026_inference.csv";
+  // ponytail: any non-local host is treated as the static GitHub Pages copy.
+  var HOSTED = !/^(localhost|127\.0\.0\.1|\[::1\]|)$/.test(location.hostname);
   var FRESHNESS_URL = "../data/processed/gujarat_2026_inference_freshness.json";
 
   var state = {
@@ -178,9 +180,11 @@
     var staleBanner = $("ts-stale-banner");
     if (stale) {
       staleBanner.hidden = false;
-      staleBanner.textContent =
-        "Data last updated " + fmt.formatRelativeTime(seconds) +
-        " — the automatic update may have failed. Showing the last successfully loaded data.";
+      staleBanner.textContent = HOSTED
+        ? "Static snapshot — data last refreshed " + fmt.formatRelativeTime(seconds) +
+          ". This hosted copy has no live updater; showing the last published data."
+        : "Data last updated " + fmt.formatRelativeTime(seconds) +
+          " — the automatic update may have failed. Showing the last successfully loaded data.";
     } else {
       staleBanner.hidden = true;
       staleBanner.textContent = "";

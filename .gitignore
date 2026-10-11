@@ -42,7 +42,7 @@ results/figures/*.png
 data/processed/.update_2026_nrt.lock
 
 # launchd job logs (machine-specific runtime output, not source)
-logs/*.log
+logs/
 
 # Internal working docs (progress log, decisions log, architecture notes,
 # design spec, project brief, agent instructions) -- kept locally for
