@@ -1,10 +1,10 @@
 {
-  "last_updated_utc": "2026-10-28T23:31:49.647686+00:00",
-  "run_date": "2026-10-28",
-  "nrt_window_start": "2026-10-22",
-  "nrt_window_end": "2026-10-28",
+  "last_updated_utc": "2026-10-29T00:02:07.144902+00:00",
+  "run_date": "2026-10-29",
+  "nrt_window_start": "2026-10-23",
+  "nrt_window_end": "2026-10-29",
   "n_events": 3622,
-  "n_closed": 3589,
-  "n_provisional": 33,
+  "n_closed": 3622,
+  "n_provisional": 0,
   "n_predictions": 3622
 }
