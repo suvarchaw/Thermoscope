@@ -1,8 +1,8 @@
 {
-  "last_updated_utc": "2026-11-11T23:41:01.045965+00:00",
-  "run_date": "2026-11-11",
-  "nrt_window_start": "2026-11-05",
-  "nrt_window_end": "2026-11-11",
+  "last_updated_utc": "2026-11-12T00:02:09.669246+00:00",
+  "run_date": "2026-11-12",
+  "nrt_window_start": "2026-11-06",
+  "nrt_window_end": "2026-11-12",
   "n_events": 3664,
   "n_closed": 3664,
   "n_provisional": 0,
